@@ -16,12 +16,20 @@ struct lumber_category_t {
   const char* name;
 };
 
-struct lumber_config_t {
-  void (*log_handler)(const struct lumber_category_t* category, enum lumber_level_t level, const char* msg);
-  void (*assert_handler)(const char* file, int line, const char* func, const char* expression, const char* message);
+typedef void (*lumber_log_handler_t)(const struct lumber_category_t* category,
+                                     enum lumber_level_t level,
+                                     const char* msg);
+typedef void (*lumber_assert_handler_t)(
+    const char* file, int line, const char* func, const char* expression, const char* message);
+typedef void* (*lumber_alloc_handler_t)(size_t size, const char* file, int line, const char* func);
+typedef void (*lumber_free_handler_t)(void* ptr, const char* file, int line, const char* func);
 
-  void* (*alloc)(size_t size, const char* file, int line, const char* func);
-  void (*free)(void* ptr, const char* file, int line, const char* func);
+struct lumber_config_t {
+  lumber_log_handler_t log_handler;
+  lumber_assert_handler_t assert_handler;
+
+  lumber_alloc_handler_t alloc_handler;
+  lumber_free_handler_t free_handler;
 };
 
 // Initializes the given config struct to fill it in with the default values.

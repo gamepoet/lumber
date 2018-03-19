@@ -37,11 +37,17 @@ static void default_log_handler(const struct lumber_category_t* category, enum l
   printf("[%s] %s %s\n", category->name, get_level_name(level), msg);
 }
 
-static void* default_alloc(size_t size, const char* file, int line, const char* func) {
+static void
+default_assert_handler(const char* file, int line, const char* func, const char* expression, const char* message) {
+  fprintf(stderr, "ASSERT FAILURE: %s\n%s\nfile: %s\nline: %d\nfunc: %s\n", expression, message, file, line, func);
+  exit(EXIT_FAILURE);
+}
+
+static void* default_alloc_handler(size_t size, const char* file, int line, const char* func) {
   return malloc(size);
 }
 
-static void default_free(void* ptr, const char* file, int line, const char* func) {
+static void default_free_handler(void* ptr, const char* file, int line, const char* func) {
   free(ptr);
 }
 
@@ -54,11 +60,11 @@ lumber_assert_ex(const char* file, int line, const char* func, const char* expre
 }
 
 static void* lumber_realloc(void* ptr, size_t size, const char* file, int line, const char* func) {
-  void* new_ptr = s_config.alloc(size, file, line, func);
+  void* new_ptr = s_config.alloc_handler(size, file, line, func);
   lumber_assert(new_ptr != NULL, "allocation failed");
   if (ptr != NULL) {
     memcpy(new_ptr, ptr, size);
-    s_config.free(ptr, __FILE__, __LINE__, __func__);
+    s_config.free_handler(ptr, __FILE__, __LINE__, __func__);
   }
   return new_ptr;
 }
@@ -77,8 +83,9 @@ void lumber_config_init(struct lumber_config_t* config) {
   }
 
   config->log_handler = &default_log_handler;
-  config->alloc = &default_alloc;
-  config->free = &default_free;
+  config->assert_handler = &default_assert_handler;
+  config->alloc_handler = &default_alloc_handler;
+  config->free_handler = &default_free_handler;
 }
 
 void lumber_init(const struct lumber_config_t* config) {
@@ -100,8 +107,8 @@ void lumber_init(const struct lumber_config_t* config) {
 
 void lumber_shutdown() {
   if (s_category_config_capacity > 0) {
-    s_config.free(s_category_config_levels, __FILE__, __LINE__, __func__);
-    s_config.free(s_category_config_names, __FILE__, __LINE__, __func__);
+    s_config.free_handler(s_category_config_levels, __FILE__, __LINE__, __func__);
+    s_config.free_handler(s_category_config_names, __FILE__, __LINE__, __func__);
     s_category_config_capacity = 0;
     s_category_config_count = 0;
     s_category_config_names = NULL;
