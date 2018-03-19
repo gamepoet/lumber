@@ -59,10 +59,62 @@ void lumber_set_level(const struct lumber_category_t* category, enum lumber_leve
 // Logs a message for a category and level.
 void lumber_log(const struct lumber_category_t* category, enum lumber_level_t level, const char* msg);
 
-#define lumber_error(category, msg) lumber_log(category, LUMBER_ERROR, msg)
-#define lumber_warning(category, msg) lumber_log(category, LUMBER_WARNING, msg)
-#define lumber_info(category, msg) lumber_log(category, LUMBER_INFO, msg)
-#define lumber_debug(category, msg) lumber_log(category, LUMBER_DEBUG, msg)
+// Logs a formatted message for a category and level.
+void lumber_logf(const struct lumber_category_t* category, enum lumber_level_t level, const char* format, ...);
+
+#define LUMBER_JOIN_IMPL(a, b) a##b
+#define LUMBER_JOIN(a, b) LUMBER_JOIN_IMPL(a, b)
+#define LUMBER_VA_ARGC_IMPL2(                                                                                          \
+    a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, N, ...)                 \
+  N
+#define LUMBER_VA_ARGC_IMPL(args) LUMBER_VA_ARGC_IMPL2 args
+#define LUMBER_VA_ARGC(...)                                                                                            \
+  LUMBER_VA_ARGC_IMPL((__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1))
+#define LUMBER_ARG_TEST_EVAL_1(one_arg, many_args) one_arg
+#define LUMBER_ARG_TEST_EVAL_2(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_3(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_4(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_5(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_6(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_7(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_8(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_9(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_10(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_11(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_12(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_13(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_14(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_15(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_16(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_17(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_18(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_19(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST_EVAL_20(one_arg, many_args) many_args
+#define LUMBER_ARG_TEST(argc, one_arg, many_args) LUMBER_JOIN(LUMBER_ARG_TEST_EVAL_, argc)(one_arg, many_args)
+
+// Logs a message at the error level.
+#define lumber_error(category, ...)                                                                                    \
+  LUMBER_ARG_TEST(LUMBER_VA_ARGC(__VA_ARGS__),                                                                         \
+                  lumber_log(category, LUMBER_ERROR, __VA_ARGS__),                                                     \
+                  lumber_logf(category, LUMBER_ERROR, __VA_ARGS__))
+
+// Logs a message at the warning level.
+#define lumber_warning(category, ...)                                                                                  \
+  LUMBER_ARG_TEST(LUMBER_VA_ARGC(__VA_ARGS__),                                                                         \
+                  lumber_log(category, LUMBER_WARNING, __VA_ARGS__),                                                   \
+                  lumber_logf(category, LUMBER_WARNING, __VA_ARGS__))
+
+// Logs a message at the info level.
+#define lumber_info(category, ...)                                                                                     \
+  LUMBER_ARG_TEST(LUMBER_VA_ARGC(__VA_ARGS__),                                                                         \
+                  lumber_log(category, LUMBER_INFO, __VA_ARGS__),                                                      \
+                  lumber_logf(category, LUMBER_INFO, __VA_ARGS__))
+
+// Logs a message at the debug level.
+#define lumber_debug(category, ...)                                                                                    \
+  LUMBER_ARG_TEST(LUMBER_VA_ARGC(__VA_ARGS__),                                                                         \
+                  lumber_log(category, LUMBER_DEBUG, __VA_ARGS__),                                                     \
+                  lumber_logf(category, LUMBER_DEBUG, __VA_ARGS__))
 
 #ifdef __cplusplus
 }

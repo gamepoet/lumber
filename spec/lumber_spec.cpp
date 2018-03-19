@@ -126,11 +126,25 @@ TEST_CASE("set specific category levels") {
   }
 }
 
-TEST_CASE("foo") {
-  SECTION("it works") {
-    lumber_init(nullptr);
-    lumber_category_t cats{"cats"};
-    lumber_info(&cats, "hello!");
-    lumber_shutdown();
+TEST_CASE("formating logs") {
+  init_t init(nullptr);
+  lumber_category_t cats{"cats"};
+
+  SECTION("it won't format if only a single string is given") {
+    auto handler = [&](const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg) {
+      CHECK(category == &cats);
+      CHECK(level == LUMBER_ERROR);
+      CHECK_THAT(msg, Equals("hunting %s"));
+    };
+    with_handler(handler, [&]() { lumber_error(&cats, "hunting %s"); });
+  }
+
+  SECTION("it will format if multiple args are given") {
+    auto handler = [&](const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg) {
+      CHECK(category == &cats);
+      CHECK(level == LUMBER_ERROR);
+      CHECK_THAT(msg, Equals("hunting 2 mice"));
+    };
+    with_handler(handler, [&]() { lumber_error(&cats, "hunting %d %s", 2, "mice"); });
   }
 }

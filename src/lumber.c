@@ -1,4 +1,5 @@
 #include "lumber.h"
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,8 @@ static int s_category_config_count;
 static const char** s_category_config_names;
 static enum lumber_level_t* s_category_config_levels;
 
+static _Thread_local char s_format_buf[2048];
+
 static const char* get_level_name(enum lumber_level_t level) {
   switch (level) {
     case LUMBER_ERROR:
@@ -34,7 +37,10 @@ static const char* get_level_name(enum lumber_level_t level) {
   }
 }
 
-static void default_log_handler(const struct lumber_category_t* category, enum lumber_level_t level, time_t timestamp, const char* msg) {
+static void default_log_handler(const struct lumber_category_t* category,
+                                enum lumber_level_t level,
+                                time_t timestamp,
+                                const char* msg) {
   // format the time
   struct tm time_local;
   localtime_r(&timestamp, &time_local);
@@ -83,6 +89,16 @@ static void category_config_reserve(int new_capacity) {
   s_category_config_levels = (enum lumber_level_t*)lumber_realloc(
       s_category_config_levels, new_capacity * sizeof(enum lumber_level_t), __FILE__, __LINE__, __func__);
   s_category_config_capacity = new_capacity;
+}
+
+static enum lumber_level_t resolve_enabled_level(const struct lumber_category_t* category) {
+  for (int index = 0; index < s_category_config_count; ++index) {
+    if (0 == strcmp(s_category_config_names[index], category->name)) {
+      return s_category_config_levels[index];
+    }
+  }
+
+  return s_default_level;
 }
 
 void lumber_config_init(struct lumber_config_t* config) {
@@ -142,17 +158,28 @@ void lumber_log(const struct lumber_category_t* category, enum lumber_level_t le
   lumber_assert(category, "category cannot be null");
   if (s_config.log_handler != NULL) {
     // get the currently configured log level for the category
-    enum lumber_level_t enabled_level = s_default_level;
-    for (int index = 0; index < s_category_config_count; ++index) {
-      if (0 == strcmp(s_category_config_names[index], category->name)) {
-        enabled_level = s_category_config_levels[index];
-        break;
-      }
-    }
-
+    const enum lumber_level_t enabled_level = resolve_enabled_level(category);
     if (level <= enabled_level) {
       time_t now = time(NULL);
       s_config.log_handler(category, level, now, msg);
+    }
+  }
+}
+
+void lumber_logf(const struct lumber_category_t* category, enum lumber_level_t level, const char* format, ...) {
+  lumber_assert(category, "category cannot be null");
+  if (s_config.log_handler != NULL) {
+    // get the currently configured log level for the category
+    const enum lumber_level_t enabled_level = resolve_enabled_level(category);
+    if (level <= enabled_level) {
+      // format the message
+      va_list args;
+      va_start(args, format);
+      vsnprintf(s_format_buf, sizeof(s_format_buf), format, args);
+      va_end(args);
+
+      time_t now = time(NULL);
+      s_config.log_handler(category, level, now, s_format_buf);
     }
   }
 }
