@@ -25,6 +25,7 @@ struct init_t {
       config = &config_default;
     }
     lumber_init(config);
+    lumber_set_default_level(LUMBER_DEBUG);
   }
   ~init_t() {
     lumber_shutdown();
@@ -38,6 +39,16 @@ with_handler(std::function<void(const lumber_category_t* category, lumber_level_
   s_log_handler = handler;
   block();
   REQUIRE(s_log_handler_called);
+  s_log_handler = nullptr;
+}
+
+static void with_handler_not_called(
+    std::function<void(const lumber_category_t* category, lumber_level_t level, const char* msg)> handler,
+    std::function<void()> block) {
+  s_log_handler_called = false;
+  s_log_handler = handler;
+  block();
+  REQUIRE(!s_log_handler_called);
   s_log_handler = nullptr;
 }
 
@@ -79,5 +90,38 @@ TEST_CASE("basic logging") {
       CHECK_THAT(msg, Equals("hunting"));
     };
     with_handler(handler, [&]() { lumber_error(&cats, "hunting"); });
+  }
+}
+
+TEST_CASE("overriding the default level") {
+  init_t init(nullptr);
+  lumber_category_t cats{"cats"};
+
+  SECTION("it won't log when the level is below the default") {
+    lumber_set_default_level(LUMBER_ERROR);
+    with_handler_not_called(nullptr, [&]() { lumber_info(&cats, "stretch"); });
+  }
+
+  SECTION("it logs when the level equal") {
+    lumber_set_default_level(LUMBER_INFO);
+    with_handler(nullptr, [&]() { lumber_info(&cats, "stretch"); });
+  }
+}
+
+TEST_CASE("set specific category levels") {
+  init_t init(nullptr);
+  lumber_category_t cats{"cats"};
+  lumber_category_t dogs{"dogs"};
+
+  SECTION("it doesn't log when the category level is set too high") {
+    lumber_set_level(&dogs, LUMBER_ERROR);
+    with_handler(nullptr, [&]() { lumber_info(&cats, "stretch"); });
+    with_handler_not_called(nullptr, [&]() { lumber_info(&dogs, "stretch"); });
+  }
+
+  SECTION("it logs when the level is equal") {
+    lumber_set_level(&dogs, LUMBER_ERROR);
+    with_handler(nullptr, [&]() { lumber_info(&cats, "stretch"); });
+    with_handler(nullptr, [&]() { lumber_error(&dogs, "stretch"); });
   }
 }
