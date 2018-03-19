@@ -1,15 +1,15 @@
 #include "catch.hpp"
 #include "lumber.h"
 
-using namespace Catch;
+using Catch::Equals;
 
-static std::function<void(const lumber_category_t* category, lumber_level_t level, const char* msg)> s_log_handler;
+static std::function<void(const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg)> s_log_handler;
 static bool s_log_handler_called;
 
-static void test_log_handler(const lumber_category_t* category, lumber_level_t level, const char* msg) {
+static void test_log_handler(const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg) {
   s_log_handler_called = true;
   if (s_log_handler) {
-    s_log_handler(category, level, msg);
+    s_log_handler(category, level, timestamp, msg);
   }
 }
 
@@ -33,7 +33,7 @@ struct init_t {
 };
 
 static void
-with_handler(std::function<void(const lumber_category_t* category, lumber_level_t level, const char* msg)> handler,
+with_handler(std::function<void(const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg)> handler,
              std::function<void()> block) {
   s_log_handler_called = false;
   s_log_handler = handler;
@@ -43,7 +43,7 @@ with_handler(std::function<void(const lumber_category_t* category, lumber_level_
 }
 
 static void with_handler_not_called(
-    std::function<void(const lumber_category_t* category, lumber_level_t level, const char* msg)> handler,
+    std::function<void(const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg)> handler,
     std::function<void()> block) {
   s_log_handler_called = false;
   s_log_handler = handler;
@@ -57,7 +57,7 @@ TEST_CASE("basic logging") {
   lumber_category_t cats{"cats"};
 
   SECTION("it logs at level debug") {
-    auto handler = [&](const lumber_category_t* category, lumber_level_t level, const char* msg) {
+    auto handler = [&](const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg) {
       CHECK(category == &cats);
       CHECK(level == LUMBER_DEBUG);
       CHECK_THAT(msg, Equals("sleep"));
@@ -66,7 +66,7 @@ TEST_CASE("basic logging") {
   }
 
   SECTION("it logs at level info") {
-    auto handler = [&](const lumber_category_t* category, lumber_level_t level, const char* msg) {
+    auto handler = [&](const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg) {
       CHECK(category == &cats);
       CHECK(level == LUMBER_INFO);
       CHECK_THAT(msg, Equals("stretch"));
@@ -75,7 +75,7 @@ TEST_CASE("basic logging") {
   }
 
   SECTION("it logs at level warning") {
-    auto handler = [&](const lumber_category_t* category, lumber_level_t level, const char* msg) {
+    auto handler = [&](const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg) {
       CHECK(category == &cats);
       CHECK(level == LUMBER_WARNING);
       CHECK_THAT(msg, Equals("hungry"));
@@ -84,7 +84,7 @@ TEST_CASE("basic logging") {
   }
 
   SECTION("it logs at level error") {
-    auto handler = [&](const lumber_category_t* category, lumber_level_t level, const char* msg) {
+    auto handler = [&](const lumber_category_t* category, lumber_level_t level, time_t timestamp, const char* msg) {
       CHECK(category == &cats);
       CHECK(level == LUMBER_ERROR);
       CHECK_THAT(msg, Equals("hunting"));
@@ -123,5 +123,14 @@ TEST_CASE("set specific category levels") {
     lumber_set_level(&dogs, LUMBER_ERROR);
     with_handler(nullptr, [&]() { lumber_info(&cats, "stretch"); });
     with_handler(nullptr, [&]() { lumber_error(&dogs, "stretch"); });
+  }
+}
+
+TEST_CASE("foo") {
+  SECTION("it works") {
+    lumber_init(nullptr);
+    lumber_category_t cats{"cats"};
+    lumber_info(&cats, "hello!");
+    lumber_shutdown();
   }
 }

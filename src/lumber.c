@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 // the configuration used to initialize this library
 static struct lumber_config_t s_config;
@@ -33,8 +34,15 @@ static const char* get_level_name(enum lumber_level_t level) {
   }
 }
 
-static void default_log_handler(const struct lumber_category_t* category, enum lumber_level_t level, const char* msg) {
-  printf("[%s] %s %s\n", category->name, get_level_name(level), msg);
+static void default_log_handler(const struct lumber_category_t* category, enum lumber_level_t level, time_t timestamp, const char* msg) {
+  // format the time
+  struct tm time_local;
+  localtime_r(&timestamp, &time_local);
+  char time_buf[sizeof("2001-01-01T01:01:01+100") + 1];
+  strftime(time_buf, sizeof(time_buf), "%FT%T%z", &time_local);
+  time_buf[sizeof(time_buf) - 1] = 0;
+
+  printf("%s %s [%s] %s\n", time_buf, get_level_name(level), category->name, msg);
 }
 
 static void
@@ -143,7 +151,8 @@ void lumber_log(const struct lumber_category_t* category, enum lumber_level_t le
     }
 
     if (level <= enabled_level) {
-      s_config.log_handler(category, level, msg);
+      time_t now = time(NULL);
+      s_config.log_handler(category, level, now, msg);
     }
   }
 }

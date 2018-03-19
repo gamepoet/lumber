@@ -1,5 +1,7 @@
 #pragma once
 #include <stddef.h>
+#include <stdint.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,6 +20,7 @@ struct lumber_category_t {
 
 typedef void (*lumber_log_handler_t)(const struct lumber_category_t* category,
                                      enum lumber_level_t level,
+                                     time_t timestamp,
                                      const char* msg);
 typedef void (*lumber_assert_handler_t)(
     const char* file, int line, const char* func, const char* expression, const char* message);
@@ -25,10 +28,16 @@ typedef void* (*lumber_alloc_handler_t)(size_t size, const char* file, int line,
 typedef void (*lumber_free_handler_t)(void* ptr, const char* file, int line, const char* func);
 
 struct lumber_config_t {
+  // The handler to use when a log message would be printed.
   lumber_log_handler_t log_handler;
+
+  // The handler to use when an assertion fails.
   lumber_assert_handler_t assert_handler;
 
+  // The handler to use when allocating memory.
   lumber_alloc_handler_t alloc_handler;
+
+  // The handler to use when freeing memory.
   lumber_free_handler_t free_handler;
 };
 
