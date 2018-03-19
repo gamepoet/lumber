@@ -114,6 +114,7 @@ void lumber_set_default_level(enum lumber_level_t level) {
 }
 
 void lumber_set_level(const struct lumber_category_t* category, enum lumber_level_t level) {
+  lumber_assert(category, "category cannot be null");
   if (s_category_config_count >= s_category_config_capacity) {
     category_config_reserve(s_category_config_capacity + 128);
   }
@@ -123,6 +124,7 @@ void lumber_set_level(const struct lumber_category_t* category, enum lumber_leve
 }
 
 void lumber_log(const struct lumber_category_t* category, enum lumber_level_t level, const char* msg) {
+  lumber_assert(category, "category cannot be null");
   if (s_config.log_handler != NULL) {
     // get the currently configured log level for the category
     enum lumber_level_t enabled_level = s_default_level;
