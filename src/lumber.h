@@ -7,19 +7,19 @@
 extern "C" {
 #endif
 
-enum lumber_level_t {
+typedef enum lumber_level_t {
   LUMBER_ERROR,
   LUMBER_WARNING,
   LUMBER_INFO,
   LUMBER_DEBUG,
-};
+} lumber_level_t;
 
-struct lumber_category_t {
+typedef struct lumber_category_t {
   const char* name;
-};
+} lumber_category_t;
 
-typedef void (*lumber_log_handler_t)(const struct lumber_category_t* category,
-                                     enum lumber_level_t level,
+typedef void (*lumber_log_handler_t)(const lumber_category_t* category,
+                                     lumber_level_t level,
                                      time_t timestamp,
                                      const char* msg);
 typedef void (*lumber_assert_handler_t)(
@@ -27,7 +27,7 @@ typedef void (*lumber_assert_handler_t)(
 typedef void* (*lumber_alloc_handler_t)(size_t size, const char* file, int line, const char* func);
 typedef void (*lumber_free_handler_t)(void* ptr, const char* file, int line, const char* func);
 
-struct lumber_config_t {
+typedef struct lumber_config_t {
   // The handler to use when a log message would be printed.
   lumber_log_handler_t log_handler;
 
@@ -39,28 +39,28 @@ struct lumber_config_t {
 
   // The handler to use when freeing memory.
   lumber_free_handler_t free_handler;
-};
+} lumber_config_t;
 
 // Initializes the given config struct to fill it in with the default values.
-void lumber_config_init(struct lumber_config_t* config);
+void lumber_config_init(lumber_config_t* config);
 
 // Initializes this library.
-void lumber_init(const struct lumber_config_t* config);
+void lumber_init(const lumber_config_t* config);
 
 // Tears down this library and frees all allocations.
 void lumber_shutdown();
 
 // Sets the default logging level when a specific category level hasn't been specified.
-void lumber_set_default_level(enum lumber_level_t level);
+void lumber_set_default_level(lumber_level_t level);
 
 // Sets the logging level for the given category.
-void lumber_set_level(const struct lumber_category_t* category, enum lumber_level_t level);
+void lumber_set_level(const lumber_category_t* category, lumber_level_t level);
 
 // Logs a message for a category and level.
-void lumber_log(const struct lumber_category_t* category, enum lumber_level_t level, const char* msg);
+void lumber_log(const lumber_category_t* category, lumber_level_t level, const char* msg);
 
 // Logs a formatted message for a category and level.
-void lumber_logf(const struct lumber_category_t* category, enum lumber_level_t level, const char* format, ...);
+void lumber_logf(const lumber_category_t* category, lumber_level_t level, const char* format, ...);
 
 #define LUMBER_JOIN_IMPL(a, b) a##b
 #define LUMBER_JOIN(a, b) LUMBER_JOIN_IMPL(a, b)
