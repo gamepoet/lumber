@@ -1,10 +1,10 @@
-#include "lumber.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "lumber.h"
 
 // the configuration used to initialize this library
 static lumber_config_t s_config;
@@ -51,8 +51,7 @@ static void default_log_handler(const lumber_category_t* category,
   printf("%s %s [%s] %s\n", time_buf, get_level_name(level), category->name, msg);
 }
 
-static void
-default_assert_handler(const char* file, int line, const char* func, const char* expression, const char* message) {
+static void default_assert_handler(const char* file, int line, const char* func, const char* expression, const char* message) {
   fprintf(stderr, "ASSERT FAILURE: %s\n%s\nfile: %s\nline: %d\nfunc: %s\n", expression, message, file, line, func);
   exit(EXIT_FAILURE);
 }
@@ -65,11 +64,9 @@ static void default_free_handler(void* ptr, const char* file, int line, const ch
   free(ptr);
 }
 
-#define lumber_assert(expr, message)                                                                                   \
-  ((expr) ? true : (lumber_assert_ex(__FILE__, __LINE__, __func__, #expr, message), false))
+#define lumber_assert(expr, message) ((expr) ? true : (lumber_assert_ex(__FILE__, __LINE__, __func__, #expr, message), false))
 
-static void
-lumber_assert_ex(const char* file, int line, const char* func, const char* expression, const char* message) {
+static void lumber_assert_ex(const char* file, int line, const char* func, const char* expression, const char* message) {
   s_config.assert_handler(file, line, func, expression, message);
 }
 
