@@ -44,10 +44,10 @@ typedef struct lumber_config_t {
 void lumber_config_init(lumber_config_t* config);
 
 // Initializes this library.
-void lumber_init(const lumber_config_t* config);
+void lumber_lib_init(const lumber_config_t* config);
 
 // Tears down this library and frees all allocations.
-void lumber_shutdown();
+void lumber_lib_shutdown();
 
 // Sets the default logging level when a specific category level hasn't been specified.
 void lumber_set_default_level(lumber_level_t level);

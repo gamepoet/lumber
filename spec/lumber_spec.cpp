@@ -24,11 +24,11 @@ struct init_t {
       config_default.log_handler = &test_log_handler;
       config = &config_default;
     }
-    lumber_init(config);
+    lumber_lib_init(config);
     lumber_set_default_level(LUMBER_DEBUG);
   }
   ~init_t() {
-    lumber_shutdown();
+    lumber_lib_shutdown();
   }
 };
 

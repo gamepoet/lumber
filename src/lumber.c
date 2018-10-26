@@ -109,7 +109,7 @@ void lumber_config_init(lumber_config_t* config) {
   config->free_handler = &default_free_handler;
 }
 
-void lumber_init(const lumber_config_t* config) {
+void lumber_lib_init(const lumber_config_t* config) {
   if (config != NULL) {
     s_config = *config;
   }
@@ -126,7 +126,7 @@ void lumber_init(const lumber_config_t* config) {
   category_config_reserve(128);
 }
 
-void lumber_shutdown() {
+void lumber_lib_shutdown() {
   if (s_category_config_capacity > 0) {
     s_config.free_handler(s_category_config_levels, __FILE__, __LINE__, __func__);
     s_config.free_handler(s_category_config_names, __FILE__, __LINE__, __func__);
