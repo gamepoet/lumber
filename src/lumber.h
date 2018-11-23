@@ -23,8 +23,8 @@ typedef void (*lumber_log_handler_t)(const lumber_category_t* category,
                                      time_t timestamp,
                                      const char* msg);
 typedef void (*lumber_assert_handler_t)(const char* file, int line, const char* func, const char* expression, const char* message);
-typedef void* (*lumber_alloc_handler_t)(size_t size, const char* file, int line, const char* func);
-typedef void (*lumber_free_handler_t)(void* ptr, const char* file, int line, const char* func);
+typedef void* (*lumber_alloc_handler_t)(size_t size, void* user_data, const char* file, int line, const char* func);
+typedef void (*lumber_free_handler_t)(void* ptr, void* user_data, const char* file, int line, const char* func);
 
 typedef struct lumber_config_t {
   // The handler to use when a log message would be printed.
@@ -38,6 +38,9 @@ typedef struct lumber_config_t {
 
   // The handler to use when freeing memory.
   lumber_free_handler_t free_handler;
+
+  // Opaque user data provided te tho alloc and free handlers
+  void* alloc_user_data;
 } lumber_config_t;
 
 // Initializes the given config struct to fill it in with the default values.

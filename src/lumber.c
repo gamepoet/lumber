@@ -56,11 +56,11 @@ static void default_assert_handler(const char* file, int line, const char* func,
   exit(EXIT_FAILURE);
 }
 
-static void* default_alloc_handler(size_t size, const char* file, int line, const char* func) {
+static void* default_alloc_handler(size_t size, void* user_data, const char* file, int line, const char* func) {
   return malloc(size);
 }
 
-static void default_free_handler(void* ptr, const char* file, int line, const char* func) {
+static void default_free_handler(void* ptr, void* user_data, const char* file, int line, const char* func) {
   free(ptr);
 }
 
@@ -71,11 +71,11 @@ static void lumber_assert_ex(const char* file, int line, const char* func, const
 }
 
 static void* lumber_realloc(void* ptr, size_t size, const char* file, int line, const char* func) {
-  void* new_ptr = s_config.alloc_handler(size, file, line, func);
+  void* new_ptr = s_config.alloc_handler(size, s_config.alloc_user_data, file, line, func);
   lumber_assert(new_ptr != NULL, "allocation failed");
   if (ptr != NULL) {
     memcpy(new_ptr, ptr, size);
-    s_config.free_handler(ptr, __FILE__, __LINE__, __func__);
+    s_config.free_handler(ptr, s_config.alloc_user_data, __FILE__, __LINE__, __func__);
   }
   return new_ptr;
 }
@@ -107,6 +107,7 @@ void lumber_config_init(lumber_config_t* config) {
   config->assert_handler = &default_assert_handler;
   config->alloc_handler = &default_alloc_handler;
   config->free_handler = &default_free_handler;
+  config->alloc_user_data = NULL;
 }
 
 void lumber_lib_init(const lumber_config_t* config) {
@@ -128,8 +129,8 @@ void lumber_lib_init(const lumber_config_t* config) {
 
 void lumber_lib_shutdown() {
   if (s_category_config_capacity > 0) {
-    s_config.free_handler(s_category_config_levels, __FILE__, __LINE__, __func__);
-    s_config.free_handler(s_category_config_names, __FILE__, __LINE__, __func__);
+    s_config.free_handler(s_category_config_levels, s_config.alloc_user_data, __FILE__, __LINE__, __func__);
+    s_config.free_handler(s_category_config_names, s_config.alloc_user_data, __FILE__, __LINE__, __func__);
     s_category_config_capacity = 0;
     s_category_config_count = 0;
     s_category_config_names = NULL;
