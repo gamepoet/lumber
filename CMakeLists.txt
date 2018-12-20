@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 project(lumber LANGUAGES C CXX)
 
 option(LUMBER_BUILD_TESTS "Build tests" OFF)
+option(LUMBER_COVERAGE "Enabled code coverage" OFF)
 
 # max out the warning settings for the compilers (why isn't there a generic way to do this?)
 if (MSVC)
@@ -35,6 +36,12 @@ target_compile_options(
   $<$<CXX_COMPILER_ID:AppleClang>:-Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-gnu-zero-variadic-macro-arguments>
   $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4100>
 )
+if (LUMBER_COVERAGE)
+  target_compile_options(lumber PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:--coverage>)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    set_target_properties(lumber PROPERTIES LINK_FLAGS --coverage)
+  endif()
+endif()
 
 if (LUMBER_BUILD_TESTS)
   include(FetchContent)
@@ -64,6 +71,12 @@ if (LUMBER_BUILD_TESTS)
     $<$<CXX_COMPILER_ID:AppleClang>:-Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-gnu-zero-variadic-macro-arguments>
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4100>
   )
+  if (LUMBER_COVERAGE)
+    target_compile_options(test_runner PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:--coverage>)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+      set_target_properties(test_runner PROPERTIES LINK_FLAGS --coverage)
+    endif()
+  endif()
 
   # test suite
   enable_testing()
