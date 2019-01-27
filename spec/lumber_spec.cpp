@@ -126,7 +126,27 @@ TEST_CASE("set specific category levels") {
   }
 }
 
-TEST_CASE("formating logs") {
+TEST_CASE("reset all category levels") {
+  init_t init(nullptr);
+  lumber_category_t cats{"cats"};
+  lumber_category_t dogs{"dogs"};
+
+  SECTION("it handles there being zero overrides") {
+    lumber_reset_levels();
+  }
+
+  SECTION("it properly resets all categories") {
+    lumber_set_level(&cats, LUMBER_ERROR);
+    lumber_set_level(&dogs, LUMBER_ERROR);
+    with_handler_not_called(nullptr, [&]() { lumber_info(&cats, "stretch"); });
+    with_handler_not_called(nullptr, [&]() { lumber_info(&dogs, "stretch"); });
+    lumber_reset_levels();
+    with_handler(nullptr, [&]() { lumber_info(&cats, "stretch"); });
+    with_handler(nullptr, [&]() { lumber_info(&dogs, "stretch"); });
+  }
+}
+
+TEST_CASE("formatting logs") {
   init_t init(nullptr);
   lumber_category_t cats{"cats"};
 
