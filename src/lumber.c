@@ -152,6 +152,11 @@ void lumber_set_level(const lumber_category_t* category, lumber_level_t level) {
   ++s_category_config_count;
 }
 
+lumber_level_t lumber_get_level(const lumber_category_t* category) {
+  lumber_assert(category, "category cannot be null");
+  return resolve_enabled_level(category);
+}
+
 void lumber_reset_levels() {
   s_category_config_count = 0;
 }

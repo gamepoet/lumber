@@ -115,12 +115,16 @@ TEST_CASE("set specific category levels") {
 
   SECTION("it doesn't log when the category level is set too high") {
     lumber_set_level(&dogs, LUMBER_ERROR);
+    CHECK(LUMBER_DEBUG == lumber_get_level(&cats));
+    CHECK(LUMBER_ERROR == lumber_get_level(&dogs));
     with_handler(nullptr, [&]() { lumber_info(&cats, "stretch"); });
     with_handler_not_called(nullptr, [&]() { lumber_info(&dogs, "stretch"); });
   }
 
   SECTION("it logs when the level is equal") {
     lumber_set_level(&dogs, LUMBER_ERROR);
+    CHECK(LUMBER_DEBUG == lumber_get_level(&cats));
+    CHECK(LUMBER_ERROR == lumber_get_level(&dogs));
     with_handler(nullptr, [&]() { lumber_info(&cats, "stretch"); });
     with_handler(nullptr, [&]() { lumber_error(&dogs, "stretch"); });
   }

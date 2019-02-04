@@ -58,6 +58,9 @@ void lumber_set_default_level(lumber_level_t level);
 // Sets the logging level for the given category.
 void lumber_set_level(const lumber_category_t* category, lumber_level_t level);
 
+// Gets the logging level for the given category.
+lumber_level_t lumber_get_level(const lumber_category_t* category);
+
 // Resets the logging level for all categories back to their defaults.
 void lumber_reset_levels();
 
